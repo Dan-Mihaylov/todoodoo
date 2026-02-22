@@ -7,7 +7,6 @@ const api = {
     const res = await fetch(`${API}${path}`, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
@@ -15,11 +14,16 @@ const api = {
     if (!res.ok) throw new Error(`Request failed: ${res.status}`);
     return res.json();
   },
-  login: (username, password) =>
-    api.request("/login", {
+  login: (username, password) => {
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", password);
+    return api.request("/login", {
       method: "POST",
-      body: JSON.stringify({ username, password }),
-    }),
+      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+  },
   getTodos: (token) => api.request("/todos", {}, token),
   createTodo: (token, title, date) =>
     api.request("/todos", { method: "POST", body: JSON.stringify({ title, date }) }, token),
