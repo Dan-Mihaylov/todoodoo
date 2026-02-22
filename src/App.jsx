@@ -273,7 +273,7 @@ function TodoApp({ token, onLogout }) {
   const fetchTodos = async () => {
     try {
       const data = await api.getTodos(token);
-      setTodos(Array.isArray(data) ? data : data.todos || []);
+      setTodos(data.map(([, todo]) => todo));
     } catch { /* silent */ }
     setLoading(false);
   };
@@ -354,10 +354,17 @@ function TodoApp({ token, onLogout }) {
 
 // ---- Root ----
 export default function App() {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem("access_token"));
 
-  const handleLogin = (t) => setToken(t);
-  const handleLogout = () => setToken(null);
+  const handleLogin = (t) => {
+    localStorage.setItem("access_token", t);
+    setToken(t);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    setToken(null);
+  };
 
   if (!token) return <LoginScreen onLogin={handleLogin} />;
   return <TodoApp token={token} onLogout={handleLogout} />;
